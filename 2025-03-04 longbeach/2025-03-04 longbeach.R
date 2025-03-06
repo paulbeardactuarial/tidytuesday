@@ -1,4 +1,3 @@
-
 library(tidyverse)
 library(ggtext)
 
@@ -9,11 +8,11 @@ data <- tt_output$longbeach
 # =============== Helper functions ===============
 
 yday_remove_feb_29 <- function(date) {
-    case_when(
-      leap_year(date) & yday(date) > 60 ~ yday(date) - 1,
-      leap_year(date) & yday(date) == 60 ~ NA, 
-      .default = yday(date)
-    )
+  case_when(
+    leap_year(date) & yday(date) > 60 ~ yday(date) - 1,
+    leap_year(date) & yday(date) == 60 ~ NA,
+    .default = yday(date)
+  )
 }
 
 date_to_dd_mm <- function(date) {
@@ -40,7 +39,7 @@ month_day_map <-
   ) |>
   mutate(
     start_yday = min(yday) - 1,
-    end_yday = max(yday) ,
+    end_yday = max(yday),
     month_text = month(date, label = TRUE),
     .by = month
   ) |>
@@ -75,7 +74,7 @@ cat_image_df <- data.frame(
   img = "./2025-03-04 longbeach/grumpy_bday_cat.png"
 )
 
-most_freq_yday <- cat_birthday_data |> slice_max(n) 
+most_freq_yday <- cat_birthday_data |> slice_max(n)
 least_freq_yday <- cat_birthday_data |> slice_min(n)
 
 
@@ -131,7 +130,8 @@ cat_birthday_data |>
     title = "Cat Birthday Frequencies",
     subtitle = glue::glue(
       "The frequency of birthdays attributed to the cats taken
-      in by the City of Long Beach Animal Care Services"),
+      in by the City of Long Beach Animal Care Services"
+    ),
     caption = glue::glue(
       "Data Source: City of Long Beach Animal Care Services
       Creator: Paul Beard"
@@ -146,8 +146,8 @@ cat_birthday_data |>
     y = most_freq_yday$n + hollow_middle_y + 25,
     xend = most_freq_yday$dob_yday,
     yend = most_freq_yday$n + hollow_middle_y,
-    arrow = arrow(type = "closed", length = unit(0.1, "inches")), 
-    color = "#FFAC1C", 
+    arrow = arrow(type = "closed", length = unit(0.1, "inches")),
+    color = "#FFAC1C",
     linewidth = 0.8
   ) +
   annotate(
@@ -168,8 +168,8 @@ cat_birthday_data |>
     y = most_freq_yday$n + hollow_middle_y + 25,
     xend = least_freq_yday$dob_yday,
     yend = least_freq_yday$n + hollow_middle_y,
-    arrow = arrow(type = "closed", length = unit(0.1, "inches")), 
-    color = "#FFAC1C", 
+    arrow = arrow(type = "closed", length = unit(0.1, "inches")),
+    color = "#FFAC1C",
     linewidth = 0.8
   ) +
   annotate(
@@ -183,7 +183,7 @@ cat_birthday_data |>
     alpha = 0,
     family = plot_font,
     label.size = 0
-  )   +
+  ) +
   theme_void() +
   theme(
     legend.position = "none",
@@ -209,7 +209,7 @@ cat_birthday_data |>
       color = "grey30",
       hjust = 0
     )
-  ) 
+  )
 
 # =============== Save ===============
 
@@ -222,7 +222,3 @@ ggsave(
   units = "in",
   dpi = 200
 )
-
-
-
-
