@@ -16,7 +16,7 @@ yday_remove_feb_29 <- function(date) {
 
 # Load fonts --------------------------------------------------------------
 
-sysfonts::font_add_google("Bangers")
+sysfonts::font_add_google("Chewy")
 showtext_auto()
 showtext_opts(dpi = 300)
 
@@ -52,8 +52,9 @@ cat_birthday_data <-
 
 
 hollow_middle_y <- 50
-bkg_col <- "cornsilk"
-plot_font <- "Bangers"
+bkg_col <- "#fdf5e2"
+month_col <- c("#829891", "#FFAC1C")
+plot_font <- "Chewy"
 
 cat_image_df <- data.frame(
   x = 0,
@@ -62,6 +63,7 @@ cat_image_df <- data.frame(
 )
 
 cat_birthday_data |>
+  #filter(dob_yday %in% month_day_map$yday) |> 
   ggplot() +
   geom_rect(
     data = month_day_map,
@@ -74,6 +76,7 @@ cat_birthday_data |>
       alpha = 0.5
     )
   ) +
+  scale_fill_manual(values = month_col) +
   geom_text(
     data = month_day_map,
     aes(
@@ -91,7 +94,10 @@ cat_birthday_data |>
     aes(
       x = dob_yday,
       y = n + hollow_middle_y
-    )
+    ),
+    width = 1,
+    just = 1,
+    color = "grey30"
   ) +
   annotate(
     geom = "rect",
@@ -102,16 +108,29 @@ cat_birthday_data |>
     fill = bkg_col
   ) +
   ggimage::geom_image(data = cat_image_df, aes(image = img, x = x, y = y), size = 0.25) +
-  coord_polar(start = 0) +
+  labs(
+    title = "Happy Birthday Mr. Tibbles",
+    #subtitle = str_wrap("Distribution of birthdays for the cats taken in by the City of Long Beach Animal Care Services", width = 50)
+  ) +
+  coord_polar(
+    start = 0
+    ) +
   theme_void() +
   theme(
     legend.position = "none",
     plot.background = element_rect(fill = bkg_col, colour = bkg_col),
-    panel.background = element_rect(fill = bkg_col, colour = bkg_col)
+    panel.background = element_rect(fill = bkg_col, colour = bkg_col),
+    plot.title = element_text(
+      family = plot_font,
+      size = 8,
+      margin = margin(t = 10, l = 3, unit = "pt"),
+      color = "grey30"
+    ),
+    plot.subtitle = element_text(
+      family = plot_font,
+      size = 5,
+      vjust = -1,
+      margin = margin(t = 6, l = 3, unit = "pt"),
+      color = "grey30"
     )
-
-  facet_wrap(vars(animal_type))
-  count(dob_na, animal_type) |> 
-  
-
-  ggplot(aes(animal_type))
+    )
