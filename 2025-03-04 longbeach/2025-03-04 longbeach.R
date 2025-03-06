@@ -106,7 +106,7 @@ cat_birthday_data |>
     ),
     family = plot_font,
     color = bkg_col,
-    size = 2
+    size = 2.5
   ) +
   geom_col(
     aes(
@@ -128,45 +128,18 @@ cat_birthday_data |>
   ) +
   ggimage::geom_image(data = cat_image_df, aes(image = img, x = x, y = y), size = 0.22) +
   labs(
-    title = "Cat Birthdays",
-    subtitle = "Plot showing the frequency of birthdays for the cats taken in by the City of Long Beach Animal Care Services",
+    title = "Cat Birthday Frequencies",
+    subtitle = glue::glue(
+      "The frequency of birthdays attributed to the cats taken
+      in by the City of Long Beach Animal Care Services"),
     caption = glue::glue(
       "Data Source: City of Long Beach Animal Care Services
       Creator: Paul Beard"
     )
   ) +
-  coord_polar(
-    start = 0
-    ) +
-  theme_void() +
-  theme(
-    legend.position = "none",
-    plot.background = element_rect(fill = bkg_col, colour = bkg_col),
-    panel.background = element_rect(fill = bkg_col, colour = bkg_col),
-    plot.title = element_text(
-      family = plot_font,
-      size = 8,
-      margin = margin(t = 10, l = 3, unit = "pt"),
-      color = "grey30"
-    ),
-    plot.subtitle = element_textbox_simple(
-      family = plot_font,
-      size = 4,
-      vjust = -1,
-      margin = margin(t = 6, l = 3, unit = "pt"),
-      color = "grey30"
-    ),
-    plot.caption = element_text(
-      family = plot_font,
-      size = 3,
-      margin = margin(t = 10, l = 3, unit = "pt"),
-      color = "grey30",
-      hjust = 0,
-      lineheight = 3.5
-    ),
-    ) +
+  coord_polar() +
   geom_hline(yintercept = mean(cat_birthday_data$n) + hollow_middle_y, color = bkg_col, linetype = "dashed") +
-  annotate(geom = "text", x = 0, y = mean(cat_birthday_data$n) + hollow_middle_y, label = "mean frequency", size = 1, color = bkg_col, vjust = -0.5) +
+  annotate(geom = "text", x = 0, y = mean(cat_birthday_data$n) + hollow_middle_y, label = "mean frequency", size = 1.2, color = bkg_col, vjust = -0.5) +
   annotate(
     geom = "segment",
     x = most_freq_yday$dob_yday + 42,
@@ -182,9 +155,8 @@ cat_birthday_data |>
     x = most_freq_yday$dob_yday + 42,
     y = most_freq_yday$n + hollow_middle_y + 25,
     label = str_wrap(glue::glue("{date_to_dd_mm(most_freq_yday$dob_yday)} was the most common date of birth, shared by {most_freq_yday$n} cats"), width = 25),
-    size = 1,
+    size = 1.8,
     color = "#FFAC1C",
-    lineheight = 4,
     vjust = 1.1,
     alpha = 0,
     family = plot_font,
@@ -205,12 +177,52 @@ cat_birthday_data |>
     x = least_freq_yday$dob_yday - 8,
     y = most_freq_yday$n + hollow_middle_y + 25,
     label = str_wrap(glue::glue("{date_to_dd_mm(least_freq_yday$dob_yday)} was the least common date of birth, shared by {least_freq_yday$n} cats"), width = 25),
-    size = 1,
-    lineheight = 4,
+    size = 1.8,
     color = "#FFAC1C",
     vjust = -0.1,
     alpha = 0,
     family = plot_font,
     label.size = 0
+  )   +
+  theme_void() +
+  theme(
+    legend.position = "none",
+    plot.background = element_rect(fill = bkg_col, colour = bkg_col),
+    panel.background = element_rect(fill = bkg_col, colour = bkg_col),
+    plot.title = element_text(
+      family = plot_font,
+      size = 14,
+      margin = margin(t = 5, l = 3, unit = "pt"),
+      color = "grey30"
+    ),
+    plot.subtitle = element_text(
+      family = plot_font,
+      size = 8,
+      vjust = -1,
+      margin = margin(t = 0, l = 3, unit = "pt"),
+      color = "grey30"
+    ),
+    plot.caption = element_text(
+      family = plot_font,
+      size = 3,
+      margin = margin(t = 5, l = 3, unit = "pt"),
+      color = "grey30",
+      hjust = 0
+    )
   ) 
+
+# =============== Save ===============
+
+
+ggsave(
+  filename = "2025-03-04 longbeach/2025-03-04 longbeach.png",
+  height = 4.75,
+  width = 3.94,
+  bg = bg_col,
+  units = "in",
+  dpi = 200
+)
+
+
+
 
