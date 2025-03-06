@@ -105,7 +105,7 @@ cat_birthday_data |>
     ),
     family = plot_font,
     color = bkg_col,
-    size = 2.5
+    size = 3
   ) +
   geom_col(
     aes(
@@ -218,7 +218,7 @@ ggsave(
   filename = "2025-03-04 longbeach/2025-03-04 longbeach.png",
   height = 4.75,
   width = 3.94,
-  bg = bg_col,
+  bg = bkg_col,
   units = "in",
   dpi = 200
 )
