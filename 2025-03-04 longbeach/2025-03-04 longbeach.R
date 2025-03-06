@@ -6,6 +6,7 @@ tt_output <- tidytuesdayR::tt_load("2025-03-04")
 
 data <- tt_output$longbeach
 
+# =============== Helper functions ===============
 
 yday_remove_feb_29 <- function(date) {
     case_when(
@@ -19,13 +20,15 @@ date_to_dd_mm <- function(date) {
   as.Date(date, origin = "2025-01-01") |> format("%d-%b")
 }
 
-# Load fonts --------------------------------------------------------------
+
+# =============== Fonts ===============
 
 sysfonts::font_add_google("Chewy")
 showtext_auto()
 showtext_opts(dpi = 300)
 
 
+# =============== Data for month boundaries ===============
 
 month_day_map <-
   tibble::tibble(
@@ -47,6 +50,7 @@ month_day_map <-
   slice_head(by = month)
 
 
+# =============== Data for cat birthdays ===============
 
 cat_birthday_data <-
   data |>
@@ -56,9 +60,11 @@ cat_birthday_data <-
   count(dob_yday)
 
 
+
+# =============== Plot params ===============
+
 hollow_middle_y <- 50
 margin_y <- 10
-
 bkg_col <- "#fdf5e2"
 month_col <- c("#829891", "#FFAC1C")
 plot_font <- "Chewy"
@@ -71,6 +77,9 @@ cat_image_df <- data.frame(
 
 most_freq_yday <- cat_birthday_data |> slice_max(n) 
 least_freq_yday <- cat_birthday_data |> slice_min(n)
+
+
+# =============== Create plot! ===============
 
 cat_birthday_data |>
   ggplot() +
@@ -119,8 +128,12 @@ cat_birthday_data |>
   ) +
   ggimage::geom_image(data = cat_image_df, aes(image = img, x = x, y = y), size = 0.22) +
   labs(
-    title = "Happy Birthday Mr. Tibbles!",
-    subtitle = "Plot showing the frequency of birthdays for the cats taken in by the City of Long Beach Animal Care Services"
+    title = "Cat Birthdays",
+    subtitle = "Plot showing the frequency of birthdays for the cats taken in by the City of Long Beach Animal Care Services",
+    caption = glue::glue(
+      "Data Source: City of Long Beach Animal Care Services
+      Creator: Paul Beard"
+    )
   ) +
   coord_polar(
     start = 0
@@ -142,10 +155,18 @@ cat_birthday_data |>
       vjust = -1,
       margin = margin(t = 6, l = 3, unit = "pt"),
       color = "grey30"
-    )
+    ),
+    plot.caption = element_text(
+      family = plot_font,
+      size = 3,
+      margin = margin(t = 10, l = 3, unit = "pt"),
+      color = "grey30",
+      hjust = 0,
+      lineheight = 3.5
+    ),
     ) +
   geom_hline(yintercept = mean(cat_birthday_data$n) + hollow_middle_y, color = bkg_col, linetype = "dashed") +
-  annotate(geom = "text", x = 0, y = mean(cat_birthday_data$n) + hollow_middle_y, label = "mean", size = 1, color = bkg_col, vjust = -0.5) +
+  annotate(geom = "text", x = 0, y = mean(cat_birthday_data$n) + hollow_middle_y, label = "mean frequency", size = 1, color = bkg_col, vjust = -0.5) +
   annotate(
     geom = "segment",
     x = most_freq_yday$dob_yday + 42,
