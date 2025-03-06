@@ -1,4 +1,6 @@
+
 library(tidyverse)
+library(ggtext)
 
 tt_output <- tidytuesdayR::tt_load("2025-03-04")
 
@@ -13,6 +15,9 @@ yday_remove_feb_29 <- function(date) {
     )
 }
 
+date_to_dd_mm <- function(date) {
+  as.Date(date, origin = "2025-01-01") |> format("%d-%b")
+}
 
 # Load fonts --------------------------------------------------------------
 
@@ -52,6 +57,8 @@ cat_birthday_data <-
 
 
 hollow_middle_y <- 50
+margin_y <- 10
+
 bkg_col <- "#fdf5e2"
 month_col <- c("#829891", "#FFAC1C")
 plot_font <- "Chewy"
@@ -62,8 +69,10 @@ cat_image_df <- data.frame(
   img = "./2025-03-04 longbeach/grumpy_bday_cat.png"
 )
 
+most_freq_yday <- cat_birthday_data |> slice_max(n) 
+least_freq_yday <- cat_birthday_data |> slice_min(n)
+
 cat_birthday_data |>
-  #filter(dob_yday %in% month_day_map$yday) |> 
   ggplot() +
   geom_rect(
     data = month_day_map,
@@ -71,7 +80,7 @@ cat_birthday_data |>
       xmin = start_yday,
       xmax = end_yday,
       ymin = -Inf,
-      ymax = Inf,
+      ymax = most_freq_yday$n + hollow_middle_y,
       fill = factor(month %% 2),
       alpha = 0.5
     )
@@ -82,7 +91,7 @@ cat_birthday_data |>
     aes(
       label = month_text,
       x = mid_yday,
-      y = max(cat_birthday_data$n) + hollow_middle_y,
+      y = most_freq_yday$n + hollow_middle_y,
       angle = (1 - mid_yday / max(cat_birthday_data$dob_yday)) * 360,
       vjust = 1.5
     ),
@@ -97,6 +106,7 @@ cat_birthday_data |>
     ),
     width = 1,
     just = 1,
+    fill = "grey30",
     color = "grey30"
   ) +
   annotate(
@@ -107,10 +117,10 @@ cat_birthday_data |>
     xmax = max(cat_birthday_data$dob_yday),
     fill = bkg_col
   ) +
-  ggimage::geom_image(data = cat_image_df, aes(image = img, x = x, y = y), size = 0.25) +
+  ggimage::geom_image(data = cat_image_df, aes(image = img, x = x, y = y), size = 0.22) +
   labs(
-    title = "Happy Birthday Mr. Tibbles",
-    #subtitle = str_wrap("Distribution of birthdays for the cats taken in by the City of Long Beach Animal Care Services", width = 50)
+    title = "Happy Birthday Mr. Tibbles!",
+    subtitle = "Plot showing the frequency of birthdays for the cats taken in by the City of Long Beach Animal Care Services"
   ) +
   coord_polar(
     start = 0
@@ -126,11 +136,60 @@ cat_birthday_data |>
       margin = margin(t = 10, l = 3, unit = "pt"),
       color = "grey30"
     ),
-    plot.subtitle = element_text(
+    plot.subtitle = element_textbox_simple(
       family = plot_font,
-      size = 5,
+      size = 4,
       vjust = -1,
       margin = margin(t = 6, l = 3, unit = "pt"),
       color = "grey30"
     )
-    )
+    ) +
+  geom_hline(yintercept = mean(cat_birthday_data$n) + hollow_middle_y, color = bkg_col, linetype = "dashed") +
+  annotate(geom = "text", x = 0, y = mean(cat_birthday_data$n) + hollow_middle_y, label = "mean", size = 1, color = bkg_col, vjust = -0.5) +
+  annotate(
+    geom = "segment",
+    x = most_freq_yday$dob_yday + 42,
+    y = most_freq_yday$n + hollow_middle_y + 25,
+    xend = most_freq_yday$dob_yday,
+    yend = most_freq_yday$n + hollow_middle_y,
+    arrow = arrow(type = "closed", length = unit(0.1, "inches")), 
+    color = "#FFAC1C", 
+    linewidth = 0.8
+  ) +
+  annotate(
+    geom = "label",
+    x = most_freq_yday$dob_yday + 42,
+    y = most_freq_yday$n + hollow_middle_y + 25,
+    label = str_wrap(glue::glue("{date_to_dd_mm(most_freq_yday$dob_yday)} was the most common date of birth, shared by {most_freq_yday$n} cats"), width = 25),
+    size = 1,
+    color = "#FFAC1C",
+    lineheight = 4,
+    vjust = 1.1,
+    alpha = 0,
+    family = plot_font,
+    label.size = 0
+  ) +
+  annotate(
+    geom = "segment",
+    x = least_freq_yday$dob_yday - 8,
+    y = most_freq_yday$n + hollow_middle_y + 25,
+    xend = least_freq_yday$dob_yday,
+    yend = least_freq_yday$n + hollow_middle_y,
+    arrow = arrow(type = "closed", length = unit(0.1, "inches")), 
+    color = "#FFAC1C", 
+    linewidth = 0.8
+  ) +
+  annotate(
+    geom = "label",
+    x = least_freq_yday$dob_yday - 8,
+    y = most_freq_yday$n + hollow_middle_y + 25,
+    label = str_wrap(glue::glue("{date_to_dd_mm(least_freq_yday$dob_yday)} was the least common date of birth, shared by {least_freq_yday$n} cats"), width = 25),
+    size = 1,
+    lineheight = 4,
+    color = "#FFAC1C",
+    vjust = -0.1,
+    alpha = 0,
+    family = plot_font,
+    label.size = 0
+  ) 
+
