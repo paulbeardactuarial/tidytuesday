@@ -26,7 +26,7 @@ str_extract_patterns <-
     
     multi_matched_strings <- str_vector[matches_per_row > 1]
     if (length(multi_matched_strings) > 0) {
-      cli::cli_abort(glue::glue("The following strings in `str_vector` returned multiple matches: ", glue::glue_collapse(multi_matched_strings, sep = ", \n")))
+      cli::cli_abort(glue::glue("The following strings in `str_vector` returned multiple pattern matches: ", glue::glue_collapse(multi_matched_strings, sep = ", \n")))
     }
     
     extraced_patterns <- pattern_extracts |>
@@ -40,6 +40,9 @@ str_extract_patterns <-
 
 
 # -------------- data construction -----------
+
+franchise_levels <- c("Toy Story", "Cars", "Incredibles", "Monsters")
+rating_vars <- c("rotten_tomatoes", "critics_choice", "metacritic")
 
 data <- inner_join(pixar_films, public_response, by = "film") |> 
   mutate(
@@ -56,9 +59,10 @@ data <- inner_join(pixar_films, public_response, by = "film") |>
   mutate(
     franchise = 
       str_extract_patterns(
-        patterns = c("Toy Story", "Cars", "Incredibles", "Monsters"), 
+        patterns = franchise_levels, 
         str_vector = film
-        )
+        ) |> 
+      factor(levels = franchise_levels)
   ) |> 
   filter(!is.na(franchise)) 
   
@@ -66,18 +70,73 @@ data <- inner_join(pixar_films, public_response, by = "film") |>
 
 # -------------- create shiny app -----------
 
-data |> 
-  ggplot(aes(x = franchise, y = rotten_tomatoes, color = sequel_no)) + 
-  geom_point(aes(h_just = 1), size = 15)
+plot_data <- data |> 
+  arrange(franchise, sequel_no) |> 
+  mutate(x_dim = row_number() * 1.5 + as.numeric(franchise)) 
+  
+franchise_dim_data <-
+  summarise(plot_data, xmin = min(x_dim), xmax = max(x_dim), xmid = xmin + 0.5 * (xmax - xmin), .by = franchise) 
+
+
+plot_pixar <- function(plot_data, y_var = "rotten_tomatoes") {
+
+plot_data |> 
+  ggplot() + 
+  geom_point(aes(x = x_dim, y = !!rlang::sym(y_var), color = sequel_no), size = 10) +
+  geom_rect(
+    data = franchise_dim_data,
+    aes(
+      xmin = xmin - 1,
+      xmax = xmax + 1,
+      ymin = -Inf,
+      ymax = Inf,
+      fill = franchise
+    ),
+    alpha = 0.2
+  ) +
+  scale_x_continuous(
+    breaks = franchise_dim_data$xmid,
+    labels = franchise_levels,
+    name = ""
+      ) +
+  theme(
+    legend.position = "none",
+    axis.ticks.x = element_blank(),  
+    axis.line.x = element_blank(),
+    panel.grid = element_blank(),
+    panel.background = element_blank()
+  )
+
+}
 
 
 
+ui <- fluidPage(
+  titlePanel("Critic Ratings of Pixar Films"),
+  
+  sidebarLayout(
+    sidebarPanel(
+      selectInput("y_var", "Select Y Variable:", 
+                  choices = rating_vars, 
+                  selected = "rotten_tomatoes") # Default choice
+    ),
+    
+    mainPanel(
+      plotOutput("plot")
+    )
+  )
+)
 
+# Server
+server <- function(input, output) {
+  
+  output$text <- renderText(input$y_var)
+  
+  output$plot <- renderPlot({
 
+    plot_pixar(plot_data, input$y_var)
 
+  })
+}
 
-
-data |> 
-  ggplot(aes(x = rotten_tomatoes)) + 
-  geom_histogram(bins = 5)
-
+shinyApp(ui = ui, server = server)
