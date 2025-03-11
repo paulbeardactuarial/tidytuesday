@@ -66,7 +66,7 @@ data <- inner_join(pixar_films, public_response, by = "film") |>
   ) |> 
   filter(!is.na(franchise)) 
   
-
+min_ratings <- summarise(data, across(all_of(rating_vars), \(x) min(x, na.rm = T)))
 
 # -------------- create shiny app -----------
 
@@ -81,6 +81,7 @@ franchise_dim_data <-
 plot_pixar <- function(plot_data, y_var = "rotten_tomatoes") {
 
 plot_data |> 
+    filter(!is.na(get(y_var))) |> 
   ggplot() + 
   geom_point(aes(x = x_dim, y = !!rlang::sym(y_var), color = sequel_no), size = 10) +
   geom_rect(
@@ -99,6 +100,7 @@ plot_data |>
     labels = franchise_levels,
     name = ""
       ) +
+  ylim(c(min(min_ratings), 100)) +
   theme(
     legend.position = "none",
     axis.ticks.x = element_blank(),  
