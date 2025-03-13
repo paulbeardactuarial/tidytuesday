@@ -81,67 +81,87 @@ franchise_dim_data <-
 plot_font <- "Quattrocento"
 
 y_var <- "metacritic"
-
-plot_data |> 
-  filter(!is.na(get(y_var))) |> 
-  ggplot() + 
-  
-  
-
-      geom_rect(data = franchise_dim_data, aes(
-        xmin = xmin - 1,
-        xmax = xmax + 1,
-        ymin = -Inf,
-        ymax = Inf),
-                fill = "#a6acb8"
-        ) +
-
+plot_data |>
+  filter(!is.na(get(y_var))) |>
+  ggplot() +
+  geom_rect(
+    data = franchise_dim_data, aes(
+      xmin = xmin - 1,
+      xmax = xmax + 1,
+      ymin = -Inf,
+      ymax = Inf
+    ),
+    fill = "#a6acb8"
+  ) +
   ggfx::with_outer_glow(
     geom_point(
       data = plot_data |> filter(sequel_no == 1),
       aes(x = x_dim, y = get(y_var)),
-      color = "#f4ef98", 
-      size = 10),
-    sigma = 5) +
+      color = "#f4ef98",
+      size = 10
+    ),
+    sigma = 5
+  ) +
   ggfx::with_outer_glow(
     geom_point(
       aes(x = x_dim, y = get(y_var)),
-      color = "#f4ef98", 
-      size = 3),
+      color = "#f4ef98",
+      size = 3
+    ),
     sigma = 3,
-    expand = 0) +
-  geom_point(
-    aes(x = x_dim, y = get(y_var), alpha = if_else(sequel_no == 1, 0, 1)),
-    color = "black",
-    fill = "white",
-    size = 10,
-    shape = 21) +
+    expand = 0
+  ) +
+  ggfx::with_outer_glow(
+    geom_point(
+      aes(x = x_dim, y = get(y_var), alpha = if_else(sequel_no == 1, 0, 1)),
+      color = "white",
+      size = 10
+    ),
+    sigma = 2,
+    expand = 0
+  ) +
   geom_text(
-    aes(x = x_dim, y = get(y_var) + 5, label = glue::glue("{film} ({lubridate::year(release_date)})")),
+    aes(x = x_dim, y = get(y_var) + 4, label = glue::glue("{film} ({lubridate::year(release_date)})")),
     color = "black",
     alpha = 0.5,
     size = 4,
     hjust = 0,
     family = plot_font,
-    fontface = "bold") +
+    fontface = "bold"
+  ) +
   scale_x_continuous(
     breaks = franchise_dim_data$xmid,
     labels = franchise_levels,
     name = ""
-      ) +
+  ) +
   scale_y_continuous(
     name = glue::glue("{y_var} score (%)") |> str_replace_all("_", " ") |> tools::toTitleCase(),
     breaks = c(2:5) * 20,
     lim = c(min(min_ratings), 120)
-    ) +
+  ) +
   coord_flip() +
   labs(
     title = "Pixar Film Ratings and their Sequels",
-    subtitle = "Pixar have never had a sequel rated better than the original in the franchise"
+    caption = glue::glue(
+      "Data Source: pixarfilms
+      Creator: Paul Beard"
+    )
+  ) +
+  geom_richtext(
+    data = st_df,
+    aes(x = x - 0.05, y = y, label = st_black),
+    hjust = 0,
+    fill = NA, label.color = NA
+  ) +
+  geom_richtext(
+    data = st_df,
+    aes(x = x, y = y, label = st_col),
+    hjust = 0,
+    fill = NA, label.color = NA
   ) +
   theme(
     plot.title = element_text(family = plot_font, size = 24, face = "bold"),
-    plot.subtitle = element_text(family = plot_font, size = 16, face = "bold"),
+    plot.subtitle = ggtext::element_markdown(family = plot_font, size = 16, face = "bold"),
     legend.position = "none",
     axis.line.x = element_line(),
     panel.grid = element_blank(),
@@ -150,7 +170,12 @@ plot_data |>
     axis.title.x = element_text(family = plot_font, size = 14, face = "bold"),
     axis.text.y = element_text(family = plot_font, size = 14, face = "bold"),
     axis.ticks.y = element_blank(),
-    
+    plot.caption = element_text(
+      family = plot_font,
+      size = 10,
+      margin = margin(t = 5, l = 3, unit = "pt"),
+      hjust = 0
+    )
   )
 
 ggsave(
@@ -159,5 +184,16 @@ ggsave(
   width = 5.62,
   bg = "white",
   units = "in",
-  dpi = 200
+  dpi = 150
 )
+
+st_df <- 
+  data.frame(
+    x = 23, y = 40,
+  st_col = "
+  Pixar have never had a <span style='color: white'>sequel</span>rated better than the <span style='color: yellow;'>original</span> in the franchise ",
+  st_black = 
+  "<span style='color: white;'>Pixar have never had a </span><span style='color: black;'>sequel</span><span style='color: white;'> rated better than the </span><span style='color: black;'>original</span><span style='color: white;'> in the franchise</span>"
+  )
+
+st <- glue::glue("Pixar have never had a sequel rated better than the original in the franchise")
