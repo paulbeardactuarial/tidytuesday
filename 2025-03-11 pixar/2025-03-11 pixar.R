@@ -1,5 +1,6 @@
 library(tidyverse)
 library(ggtext)
+library(shiny)
 
 tt_output <- tidytuesdayR::tt_load("2025-03-11")
 
@@ -8,7 +9,7 @@ public_response <- tt_output$public_response
 
 
 sysfonts::font_add_google("Quattrocento")
-
+showtext::showtext_auto()
 
 # -------------- custom function for extracting multiple patterns over a vector -----------
 
@@ -41,7 +42,7 @@ str_extract_patterns <-
 
 # -------------- data construction -----------
 
-franchise_levels <- c("Toy Story", "Cars", "Incredibles", "Monsters")
+franchise_levels <- c("Cars", "Monsters",  "Incredibles", "Toy Story")
 rating_vars <- c("rotten_tomatoes", "critics_choice", "metacritic")
 
 data <- inner_join(pixar_films, public_response, by = "film") |> 
@@ -68,77 +69,95 @@ data <- inner_join(pixar_films, public_response, by = "film") |>
   
 min_ratings <- summarise(data, across(all_of(rating_vars), \(x) min(x, na.rm = T)))
 
-# -------------- create shiny app -----------
+# -------------- create plotting function -----------
 
 plot_data <- data |> 
-  arrange(franchise, sequel_no) |> 
+  arrange(franchise, desc(sequel_no)) |> 
   mutate(x_dim = row_number() * 1.5 + as.numeric(franchise)) 
   
 franchise_dim_data <-
   summarise(plot_data, xmin = min(x_dim), xmax = max(x_dim), xmid = xmin + 0.5 * (xmax - xmin), .by = franchise) 
 
+plot_font <- "Quattrocento"
 
-plot_pixar <- function(plot_data, y_var = "rotten_tomatoes") {
+y_var <- "metacritic"
 
 plot_data |> 
-    filter(!is.na(get(y_var))) |> 
+  filter(!is.na(get(y_var))) |> 
   ggplot() + 
-  geom_point(aes(x = x_dim, y = !!rlang::sym(y_var), color = sequel_no), size = 10) +
-  geom_rect(
-    data = franchise_dim_data,
-    aes(
-      xmin = xmin - 1,
-      xmax = xmax + 1,
-      ymin = -Inf,
-      ymax = Inf,
-      fill = franchise
-    ),
-    alpha = 0.2
-  ) +
+  
+  
+
+      geom_rect(data = franchise_dim_data, aes(
+        xmin = xmin - 1,
+        xmax = xmax + 1,
+        ymin = -Inf,
+        ymax = Inf),
+                fill = "#a6acb8"
+        ) +
+
+  ggfx::with_outer_glow(
+    geom_point(
+      data = plot_data |> filter(sequel_no == 1),
+      aes(x = x_dim, y = get(y_var)),
+      color = "#f4ef98", 
+      size = 10),
+    sigma = 5) +
+  ggfx::with_outer_glow(
+    geom_point(
+      aes(x = x_dim, y = get(y_var)),
+      color = "#f4ef98", 
+      size = 3),
+    sigma = 3,
+    expand = 0) +
+  geom_point(
+    aes(x = x_dim, y = get(y_var), alpha = if_else(sequel_no == 1, 0, 1)),
+    color = "black",
+    fill = "white",
+    size = 10,
+    shape = 21) +
+  geom_text(
+    aes(x = x_dim, y = get(y_var) + 5, label = glue::glue("{film} ({lubridate::year(release_date)})")),
+    color = "black",
+    alpha = 0.5,
+    size = 4,
+    hjust = 0,
+    family = plot_font,
+    fontface = "bold") +
   scale_x_continuous(
     breaks = franchise_dim_data$xmid,
     labels = franchise_levels,
     name = ""
       ) +
-  ylim(c(min(min_ratings), 100)) +
+  scale_y_continuous(
+    name = glue::glue("{y_var} score (%)") |> str_replace_all("_", " ") |> tools::toTitleCase(),
+    breaks = c(2:5) * 20,
+    lim = c(min(min_ratings), 120)
+    ) +
+  coord_flip() +
+  labs(
+    title = "Pixar Film Ratings and their Sequels",
+    subtitle = "Pixar have never had a sequel rated better than the original in the franchise"
+  ) +
   theme(
+    plot.title = element_text(family = plot_font, size = 24, face = "bold"),
+    plot.subtitle = element_text(family = plot_font, size = 16, face = "bold"),
     legend.position = "none",
-    axis.ticks.x = element_blank(),  
-    axis.line.x = element_blank(),
+    axis.line.x = element_line(),
     panel.grid = element_blank(),
-    panel.background = element_blank()
-  )
-
-}
-
-
-
-ui <- fluidPage(
-  titlePanel("Critic Ratings of Pixar Films"),
-  
-  sidebarLayout(
-    sidebarPanel(
-      selectInput("y_var", "Select Y Variable:", 
-                  choices = rating_vars, 
-                  selected = "rotten_tomatoes") # Default choice
-    ),
+    panel.background = element_blank(),
+    axis.text.x = element_text(family = plot_font, size = 14, face = "bold"),
+    axis.title.x = element_text(family = plot_font, size = 14, face = "bold"),
+    axis.text.y = element_text(family = plot_font, size = 14, face = "bold"),
+    axis.ticks.y = element_blank(),
     
-    mainPanel(
-      plotOutput("plot")
-    )
   )
+
+ggsave(
+  filename = "2025-03-11 pixar/2025-03-11 pixar.png",
+  height = 6.04,
+  width = 5.62,
+  bg = "white",
+  units = "in",
+  dpi = 200
 )
-
-# Server
-server <- function(input, output) {
-  
-  output$text <- renderText(input$y_var)
-  
-  output$plot <- renderPlot({
-
-    plot_pixar(plot_data, input$y_var)
-
-  })
-}
-
-shinyApp(ui = ui, server = server)
