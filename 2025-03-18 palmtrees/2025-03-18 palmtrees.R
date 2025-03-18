@@ -12,44 +12,37 @@ palmtrees <- tt_output$palmtrees
 palmtrees |> glimpse()
 
 
-
 palmtrees |> 
-  ggplot(aes(x = main_fruit_colors)) +
-  stat_count() +
-  theme_void() +
-  theme(
-    axis.text.x = element_text(angle = 90)
-  )
-
-
-grad <- ragg::linearGradient(colours = c("blue", "green"))
-
-preview_gradient(grad)
-
-
-palmtrees |> 
-  count(palm_subfamily , sort = T) 
-  
-
-palmtrees |> 
-  count(fruit_color_description, main_fruit_colors, sort = T) |> View()
-
+  summarise(
+    range = range(max_stem_height_m),
+    max = max(max_stem_height_m),
+    count = n(),
+    .by = acc_genus
+  ) |> arrange(desc(range), count)
+    sort = T) 
 
 plot_data <-
-palmtrees |> 
-  separate_longer_delim(cols = main_fruit_colors, delim = ";") |> 
-  mutate(main_fruit_colors = readr::parse_character(main_fruit_colors)) |> 
-  filter(!is.na(main_fruit_colors)) |> 
-  mutate(count = 1/n(), .by = spec_name) |> 
-  summarise(count = sum(count), .by = c("palm_subfamily", "main_fruit_colors")) |> 
-  mutate(
-    palm_subfamily  = factor(palm_subfamily ),
-    main_fruit_colors = str_replace_all(main_fruit_colors, "-", "_")
-    )
+palmtrees |>
+  filter(acc_genus == "Eremospatha") |> 
+  mutate(spec_name = fct_reorder(.f = spec_name, .x = max_stem_height_m) |> fct_rev()) 
 
 
+plot_data |> 
+  ggplot() +
+  aes(x = as.numeric(spec_name) * 10, y = max_stem_height_m) |> 
+  geom_col(width = 1, fill = "#8B5E3C") |> 
+  reduce2(
+    .x = as.numeric(plot_data$spec_name) * 10, 
+    .y = plot_data$max_stem_height_m, 
+    .f = function(plot, x, y) {
+      list(plot, geom_palm_leaf(x = x, y = y, fill = "forestgreen"))
+    },
+    .init = _)
+  
   
 
+
+tt_output$palmtrees$max_stem_height_m
 
 
 
