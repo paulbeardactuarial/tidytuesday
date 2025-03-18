@@ -23,15 +23,18 @@ plot_data <-
     spec_name = fct_reorder(.f = spec_name, .x = max_stem_height_m) |> fct_rev()
   )
 
+
+x_gap <- 12
+
 # plot it
 plot_data |>
   ggplot() +
-  aes(x = as.numeric(spec_name) * 10, y = max_stem_height_m) |>
+  aes(x = as.numeric(spec_name) * x_gap, y = max_stem_height_m) |>
   geom_col(width = 1, fill = "#8B5E3C") |>
   # the custom function `geom_palm_leaf()` is employed at the tip of each bar, to look like leaves are added to a trunk.
   # function can only do one point at a time, so perform iteratively with reduce2()
   reduce2(
-    .x = as.numeric(plot_data$spec_name) * 10,
+    .x = as.numeric(plot_data$spec_name) * x_gap,
     .y = plot_data$max_stem_height_m,
     .f = function(plot, x, y) {
       list(plot, geom_palm_leaf(x = x, y = y, fill = "forestgreen"))
@@ -50,7 +53,7 @@ plot_data |>
     sigma = 20
   ) +
   scale_y_continuous(name = "Max. Stem Height (m)") +
-  scale_x_continuous(name = "Species", breaks = 1:nrow(plot_data) * 10, labels = levels(plot_data$spec_name)) +
+  scale_x_continuous(name = "Species", breaks = 1:nrow(plot_data) * x_gap, labels = levels(plot_data$spec_name)) +
   labs(
     title = "Palm Tree Heights",
     subtitle = "The maximum height of every species of palm tree within the genus **Eremospatha**",
