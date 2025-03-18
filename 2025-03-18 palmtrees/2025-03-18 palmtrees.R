@@ -45,7 +45,7 @@ plot_data |>
   ggfx::with_blur(
     annotate(
       geom = "point",
-      x = 90,
+      x = 9 * x_gap,
       y = 120,
       color = "yellow",
       size = 20
