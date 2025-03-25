@@ -26,14 +26,15 @@ amazon_colors <- c("#FF9900", "#131A22", "#232F3E")
 # create data object
 emoji_count <-
   tt_output$report_words_clean |> 
-  inner_join(word_emoji_map) |> 
+  left_join(word_emoji_map) |> 
   count(emoji, sort = TRUE)  |> 
   left_join(
     word_emoji_map |>  summarise(words = paste(word, collapse = ", "), .by = emoji)
   ) |> 
   mutate(
     proportion = n/sum(n)
-  )
+  ) |> 
+  filter(!is.na(emoji))
 
 
 # # font spec
@@ -56,7 +57,7 @@ p <-
       x = -2,
       y = 1,
       label = glue::glue(
-        "'Word Cloud' showing the relative frequency of themes in Amazon Annual Reports 2005 - 2023",
+        "'Word Cloud' showing the relative frequency of themes in Amazon Annual Reports 2005 to 2023",
         "<br>",
         "<br>",
         "Instead of displaying words, the cloud consolidates words into themes. These were assigned by ChatGPT under the prompt <span style='font-style:italic;color:#FF9900'>*\"...the emoji that best corresponds to the word\"*</span>")
@@ -109,11 +110,13 @@ p <-
     legend.position = "none",
     plot.title = element_text(size = 24, face = "bold", color = "#131A22", family = plot_font, margin = margin(l = 20, r = 10)),
     plot.caption = element_text(size = 8, face = "plain", color = "#131A22", family = plot_font, margin = margin(t = 10, b = 20))
+   # plot.margin = margin(6, 6, 6, 6)
   ) +
   coord_cartesian(xlim = c(-2, 2), ylim = c(-5.5, 1)) 
 
 
 # make ggplot interactive 
+girafe_plot <-
 girafe(ggobj  = p, 
                 options = 
                   list(
@@ -124,3 +127,4 @@ girafe(ggobj  = p,
                     )
                 )
 
+htmlwidgets::saveWidget(girafe_plot, "./2025-03-25 report_words/amazon_report_words.html")
