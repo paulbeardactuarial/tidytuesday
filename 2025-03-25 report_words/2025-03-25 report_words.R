@@ -1,10 +1,17 @@
 
 library(tidyverse)
 library(ggiraph)
+library(ggrepel)
 
+# load in data
+# note `word_emoji_map` was constructed in `word_emoji_map_create.R` using API connection to LLM
 tt_output <- tidytuesdayR::tt_load("2025-03-25")
 word_emoji_map <- readRDS(glue::glue("./2025-03-25 report_words/Data/word_emoji_map.rds"))
 
+# colors
+amazon_colors <- c("#FF9900", "#131A22", "#232F3E")
+
+# create data object
 emoji_count <-
   tt_output$report_words_clean |> 
   inner_join(word_emoji_map) |> 
@@ -16,26 +23,14 @@ emoji_count <-
     proportion = n/sum(n)
   )
 
-emoji_count |> View()
-           
+
+# font spec
+plot_font <- "Noto Color Emoji"
+sysfonts::font_add_google(plot_font)
+showtext::showtext_auto()
 
 
-emoji_count_by_year <-
-  tt_output$report_words_clean |> 
-  count(word, year, sort = TRUE) |> 
-  left_join(word_emoji_map) |> 
-  arrange(desc(n)) |> 
-  count(emoji, year, wt = n, sort = TRUE) |> 
-  filter(!is.na(emoji)) 
-
-ggplot(data = emoji_count |> head(20)) +
-  aes(fill = n, label = emoji, area = n) +
-  geom_treemap( layout = "squarified") +
-  geom_treemap_text(fontface = "bold", color = "black", grow = F, reflow = T, place = "centre", layout = "squarified", size = 40) +
-  theme(
-    legend.position = "none"
-  )
-
+# create ggplot object
 p <-
 ggplot(data = emoji_count |> head(30) |> arrange(proportion) |> mutate(words = stringr::str_replace_all(words, ", ", "<br>"))) +
   aes(x = 0,
@@ -52,7 +47,7 @@ ggplot(data = emoji_count |> head(30) |> arrange(proportion) |> mutate(words = s
         "{words}"
         )
       ) +
-  ggiraph::geom_text_repel_interactive(
+  geom_text_repel_interactive(
     max.overlaps = Inf,
     seed = 1,
     box.padding = 1,
@@ -73,10 +68,10 @@ ggplot(data = emoji_count |> head(30) |> arrange(proportion) |> mutate(words = s
   ) +
   theme(
     legend.position = "none",
-    plot.title =  element_text(family = plot_font, size = 32, face = "bold")
+    plot.title =  element_text(family = "Arial", size = 32, face = "bold")
   )
 
-
+# make ggplot interactive 
 girafe(ggobj  = p, 
                 options = 
                   list(
