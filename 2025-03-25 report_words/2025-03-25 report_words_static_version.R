@@ -11,7 +11,7 @@ tt_output <- tidytuesdayR::tt_load("2025-03-25")
 word_emoji_map <- readRDS(glue::glue("./2025-03-25 report_words/Data/word_emoji_map.rds"))
 
 # colors
-amazon_colors <- c("#FF9900", "#146eb4", "#232F3E", "#232F3E")
+amazon_colors <- c("#FF9900", "#146eb4", "#232F3E", "#232F3E") 
 text_color <- "#131A22"
 
 # create data object
@@ -58,9 +58,9 @@ plot_data |>
     box.colour = NA,
     vjust = 1,
     hjust = 0,
-    size = 4.5,
+    size = 4,
     box.padding = unit(c(0, 0, 0, 0), "pt"),
-    width = unit(0.95, "npc")
+    width = unit(0.85, "npc")
   ) +
   aes(
     x = 0,
@@ -86,7 +86,7 @@ plot_data |>
   ) +
   theme(
     legend.position = "none",
-    plot.title = element_text(size = 24, face = "bold", color = text_color, margin = margin(l = 20, r = 10)),
+    plot.title = element_text(size = 22, face = "bold", color = text_color, margin = margin(l = 20, r = 10)),
     plot.caption = element_text(size = 8, face = "plain", color = text_color, margin = margin(t = 10, b = 20, r = 5)),
     plot.margin = margin(10,2,2,2)
   ) +
