@@ -5,18 +5,6 @@ library(ggrepel)
 library(extrafont)
 library(ggtext) 
 
-# # Check/add available fonts
-# fonts()
-# systemfonts::register_font(
-#   name = "Roboto",
-#   plain = systemfonts::match_fonts("Roboto")
-# )
-
-# set font
-# plot_font <- "Roboto"
-# sysfonts::font_add_google(plot_font)
-# showtext::showtext_auto()
-
 # load in data
 # note `word_emoji_map` was constructed in `word_emoji_map_create.R` using API connection to LLM
 tt_output <- tidytuesdayR::tt_load("2025-03-25")
@@ -48,7 +36,6 @@ plot_data <-
   emoji_count |>
   arrange(desc(proportion)) |>
   head(points) |>
-  mutate(words = stringr::str_replace_all(words, ", ", "<br>")) |> 
   mutate(color = sample(amazon_colors, points, replace = T))
 
 # create ggplot object
