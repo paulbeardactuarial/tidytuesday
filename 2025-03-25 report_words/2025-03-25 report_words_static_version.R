@@ -58,7 +58,7 @@ plot_data |>
     box.colour = NA,
     vjust = 1,
     hjust = 0,
-    size = 4,
+    size = 3.5,
     box.padding = unit(c(0, 0, 0, 0), "pt"),
     width = unit(0.85, "npc")
   ) +
@@ -86,11 +86,11 @@ plot_data |>
   ) +
   theme(
     legend.position = "none",
-    plot.title = element_text(size = 22, face = "bold", color = text_color, margin = margin(l = 20, r = 10)),
-    plot.caption = element_text(size = 8, face = "plain", color = text_color, margin = margin(t = 10, b = 20, r = 5)),
+    plot.title = element_text(size = 18, face = "bold", color = text_color, margin = margin(l = 20, r = 10)),
+    plot.caption = element_text(size = 7, face = "plain", color = text_color, margin = margin(t = 10, b = 20, r = 5)),
     plot.margin = margin(10,2,2,2)
   ) +
-  coord_cartesian(xlim = c(-2, 2), ylim = c(-6, 1)) 
+  coord_cartesian(xlim = c(-2, 2), ylim = c(-6.75, 1)) 
 
 
 # TO SAVE export the plot manually... 
