@@ -168,11 +168,11 @@ plot_data |>
     data = franchise_dim_data,
     aes(
       x = xmid,
-      y = 52,
+      y = 35,
       label = franchise
     ),
     color = "white",
-    family = plot_font, size = 10, hjust = 1, fontface = "bold"
+    family = plot_font, size = 10, hjust = 0, fontface = "bold", 
   ) +
   geom_textbox(
     data = data.frame(),
