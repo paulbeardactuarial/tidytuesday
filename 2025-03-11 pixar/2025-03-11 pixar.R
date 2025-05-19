@@ -215,8 +215,8 @@ plot_data |>
   ) 
 ggsave(
   filename = "2025-03-11 pixar/2025-03-11 pixar.png",
-  height = 6.04,
-  width = 5.62,
+  height = 5.44,
+  width = 5.76,
   bg = "white",
   units = "in",
   dpi = 175
